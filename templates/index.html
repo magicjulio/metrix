@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>n×m Matrix Builder</title>
+    <style>
+        :root { font-family: "Inter", "Segoe UI", sans-serif; color: #19212c; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #eef2ff 0%, #e0e7ff 40%, #f8fafc 100%);
+            gap: 2rem; /* Add spacing between main card and sidebar */
+            flex-wrap: wrap; /* Ensure it stacks clearly on mobile */
+            padding: 2rem; /* Prevent content touching edges on small screens */
+            box-sizing: border-box;
+        }
+        .wrapper {
+            width: min(92vw, 520px);
+            padding: 3.25rem 3rem;
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(8px);
+        }
+        h1 {
+            margin: 0 0 1rem;
+            font-size: 2rem;
+            letter-spacing: 0.015em;
+            text-align: center;
+        }
+        p {
+            margin: 0 0 2rem;
+            text-align: center;
+            color: #4b5563;
+        }
+        form { display: grid; gap: 1.5rem; }
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        label {
+            display: grid;
+            gap: 0.4rem;
+            padding: 1rem 1.1rem;
+            border-radius: 1rem;
+            background: linear-gradient(145deg, #f3f4ff 0%, #ffffff 60%, #eef2ff 100%);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -18px rgba(79, 70, 229, 0.65);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+        label span {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #4338ca;
+        }
+        input {
+            border: none;
+            border-bottom: 2px solid #d1d5db;
+            padding: 0.35rem 0;
+            font-size: 1.1rem;
+            background: transparent;
+            color: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: #6366f1; }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        button {
+            padding: 0.95rem;
+            border-radius: 0.9rem;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #d7fcff;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            opacity: 0.65;
+            cursor: pointer;
+            
+        }
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr; /* Full width for the main Calculate button */
+            gap: 1rem;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        /* New Sidebar Styles */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(8px);
+            height: fit-content;
+            min-width: 200px;
+        }
+        .sidebar h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
+            text-align: center;
+            color: #4b5563;
+        }
+        .note {
+            font-size: 0.85rem;
+            text-align: center;
+            color: #64748b;
+        }
+        .preview {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 0.9rem;
+            background: #f1f5f9;
+            border: 1px solid #cbd5f5;
+            color: #1e293b;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.95rem;
+        }
+        .preview h2 {
+            margin: 0 0 0.75rem;
+            font-size: 1.05rem;
+            letter-spacing: 0.015em;
+        }
+        .preview ul {
+            margin: 0;
+            padding-left: 1.15rem;
+            display: grid;
+            gap: 0.35rem;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.95rem;
+        }
+        
+        /* New Styles for Eigen Pairs */
+        .eigen-container {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .eigen-pair {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+        }
+        .vector-column {
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #94a3b8;
+            border-right: 2px solid #94a3b8;
+            padding: 0 0.5rem;
+            border-radius: 4px;
+        }
+        .vector-val {
+            text-align: center;
+            line-height: 1.4;
+        }
+        .animate-section {
+            width: min(92vw, 520px);
+            display: grid;
+            gap: 1rem;
+            padding: 1.75rem 2rem;
+            border-radius: 1.25rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(8px);
+        }
+        .animate-section h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .animate-section .note {
+            margin: 0;
+        }
+        .animate-video {
+            width: 100%;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            background: #0f172a;
+        }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 1000;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-card {
+            background: white;
+            padding: 2rem 2.5rem;
+            border-radius: 1.25rem;
+            text-align: center;
+            box-shadow: 0 25px 60px -25px rgba(15, 23, 42, 0.7);
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .status {
+            font-size: 0.9rem;
+            color: #475569;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script id="calculatedMatrixData" type="application/json">
+        {% if submitted_array is not none %}
+            {{ submitted_array.tolist() | tojson }}
+        {% else %}
+            null
+        {% endif %}
+    </script>
+
+    <main class="wrapper">
+        <h1>nxm Matrix Builder</h1>
+        <p>Populate each cell below. Submission and calculations are coming soon.</p>
+        <form method="post">
+            <div class="size-panel">
+                <div class="size-header">Matrix size</div>
+                <div class="size-grid">
+                    <label>
+                        <span>Rows</span>
+                        <div class="size-control">
+                            <input type="number" class="size-input" name="rows" min="{{ min_dim }}" max="{{ max_dim }}" step="1" value="{{ rows }}">
+                            <div class="size-stepper">
+                                <button type="button" class="btn-secondary" data-size-action="inc" data-size-target="rows">▲</button>
+                                <button type="button" class="btn-secondary" data-size-action="dec" data-size-target="rows">▼</button>
+                            </div>
+                        </div>
+                    </label>
+                    <label>
+                        <span>Columns</span>
+                        <div class="size-control">
+                            <input type="number" class="size-input" name="cols" min="{{ min_dim }}" max="{{ max_dim }}" step="1" value="{{ cols }}">
+                            <div class="size-stepper">
+                                <button type="button" class="btn-secondary" data-size-action="inc" data-size-target="cols">▲</button>
+                                <button type="button" class="btn-secondary" data-size-action="dec" data-size-target="cols">▼</button>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="matrix-grid" style="--cols: {{ cols }};">
+                {% for i in range(1, rows + 1) %}
+                    {% for j in range(1, cols + 1) %}
+                        <label>
+                            <span>A{{ i }}{{ j }}</span>
+                            <input type="number" name="a{{ i }}{{ j }}" data-row="{{ i }}" data-col="{{ j }}" step="any" placeholder="0">
+                        </label>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="actions">
+                <button type="submit">Calculate</button>
+            </div>
+           
+        </form>
+
+        {% if submitted_array is not none and results %}
+            <div class="preview">
+                <h2>Input Matrix (A)</h2>
+                <pre>{{ submitted_array }}</pre>
+            </div>
+            <div class="preview">
+                <h2>rref</h2>
+                <pre>{{ results.rref }}</pre>
+            </div>
+
+            <div class="preview">
+                <h2>Analysis Results</h2>
+                <ul>
+                    {% if results.is_square %}
+                        <li><strong>Determinant:</strong> {{ results.determinant }}</li>
+                        <li><strong>Trace:</strong> {{ results.trace }}</li>
+                        <li><strong>dim(Eigenraum λ=1):</strong> {{ results.eigenraum_dim_1 }}</li>
+                        <li><strong>Abbildungstyp:</strong> {{ results.abb_type }}</li>
+                    {% endif %}
+                    <li><strong>Rank:</strong> {{ results.rank }}</li>
+                </ul>
+
+                {% if results.is_square %}
+                <div style="margin-top: 1rem;">
+                    <strong>Eigenpairs (λ, v):</strong>
+                    <div class="eigen-container">
+                        {% for item in results.eigen_data %}
+                        <div class="eigen-pair">
+                            <span>λ = {{ item.value }}</span>
+                            <span>→</span>
+                            {% for vector in item.vectors %}
+                                <div class="vector-column">
+                                    {% for comp in vector %}
+                                        <span class="vector-val">{{ comp }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                            <span>dim = {{ item.dim }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if results.is_square %}
+            <div class="preview">
+                <h2>Inverse (A⁻¹)</h2>
+                <pre>{{ results.inverse }}</pre>
+            </div>
+            <div class="preview">
+                <h2>Orthogonal (E<sub>Idt</sub> = A x A<sup>T</sup>)</h2>
+                <pre>{{ results.orth }}</pre>
+                
+                 
+               
+            </div>
+            {% endif %}
+            <div class="preview">
+                <h2>Transpose (A<sup>T</sup>)</h2>
+                <pre>{{ results.trans }}</pre>
+            </div>
+        {% endif %}
+
+    </main>
+
+    <aside class="sidebar">
+        <h3>Presets</h3>
+        <button type="button" id="randomize" class="btn-secondary">Randomize</button>
+        <button type="button" id="ones" class="btn-secondary">Ones</button>
+        <button type="button" id="zeros" class="btn-secondary">Zeros</button>
+        <button type="button" id="identity" class="btn-secondary" data-square-only="true">Identity</button>
+        <button type="button" id="upper" class="btn-secondary" data-square-only="true">Upper triangular</button>
+        <button type="button" id="symmetric" class="btn-secondary" data-square-only="true">symmetric</button>
+    </aside>
+
+    <section class="animate-section" id="animateSection">
+        <h2>Matrix Animation</h2>
+        <p class="note">Available for 2×2 matrices only.</p>
+        <button type="button" id="animate" class="btn-secondary">Animate</button>
+        <div class="status" id="animateStatus"></div>
+        <video id="animateVideo" class="animate-video" controls style="display: none;"></video>
+    </section>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <div>Rendering animation...</div>
+        </div>
+    </div>
+
+    <script>
+        const calculatedMatrix = JSON.parse(
+            document.getElementById('calculatedMatrixData').textContent.trim() || 'null'
+        );
+        const getDims = () => {
+            const rows = parseInt(document.querySelector('input[name="rows"]').value || "0", 10);
+            const cols = parseInt(document.querySelector('input[name="cols"]').value || "0", 10);
+            return { rows, cols, isSquare: rows === cols };
+        };
+
+        const getCellPos = (input) => ({
+            row: parseInt(input.dataset.row || "0", 10),
+            col: parseInt(input.dataset.col || "0", 10)
+        });
+
+        const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
+        const sizeForm = document.querySelector('form[method="post"]');
+        let sizeTimer = null;
+        const submitSizeChange = () => {
+            clearTimeout(sizeTimer);
+            sizeTimer = setTimeout(() => {
+                sizeForm.requestSubmit();
+            }, 200);
+        };
+
+        const setSizeValue = (name, next) => {
+            const input = document.querySelector(`input[name="${name}"]`);
+            const min = parseInt(input.min || "1", 10);
+            const max = parseInt(input.max || "10", 10);
+            input.value = clamp(next, min, max);
+            toggleSquareOnly();
+            submitSizeChange();
+        };
+
+        const toggleSquareOnly = () => {
+            const { isSquare } = getDims();
+            document.querySelectorAll('[data-square-only="true"]').forEach(btn => {
+                btn.disabled = !isSquare;
+            });
+        };
+
+        toggleSquareOnly();
+        document.querySelector('input[name="rows"]').addEventListener('input', () => {
+            toggleSquareOnly();
+            submitSizeChange();
+        });
+        document.querySelector('input[name="cols"]').addEventListener('input', () => {
+            toggleSquareOnly();
+            submitSizeChange();
+        });
+
+        document.querySelectorAll('[data-size-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.sizeTarget;
+                const action = btn.dataset.sizeAction;
+                const input = document.querySelector(`input[name="${target}"]`);
+                const current = parseInt(input.value || "0", 10);
+                const delta = action === "inc" ? 1 : -1;
+                setSizeValue(target, current + delta);
+            });
+        });
+
+        document.getElementById('randomize').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                input.value = Math.floor(Math.random() * 10);
+            });
+        });
+        document.getElementById('ones').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                input.value = 1;
+            });
+        });
+        document.getElementById('identity').addEventListener('click', () => {
+            const { isSquare } = getDims();
+            if (!isSquare) return;
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                const { row, col } = getCellPos(input);
+                if (row === col) { input.value = 1 } else input.value = 0;
+            });
+        });
+        document.getElementById('zeros').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                input.value = 0;
+            });
+        });
+        document.getElementById('upper').addEventListener('click', () => {
+            const { isSquare } = getDims();
+            if (!isSquare) return;
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                const { row, col } = getCellPos(input);
+                if (row <= col) { 
+                    input.value = Math.floor(Math.random() * 100);
+                } else {
+                    input.value = 0;
+                }
+            });
+        });
+        document.getElementById('symmetric').addEventListener('click', () => {
+            const { isSquare } = getDims();
+            if (!isSquare) return;
+            const inputs = document.querySelectorAll('.matrix-grid input[type="number"]');
+            inputs.forEach(input => {
+                const { row, col } = getCellPos(input);
+                if (row <= col) {
+                    const val = Math.floor(Math.random() * 100);
+                    input.value = val;
+                    const mirrorInput = document.querySelector(`input[name="a${col}${row}"]`);
+                    if (mirrorInput) {
+                        mirrorInput.value = val;
+                    }
+                }
+            });
+        });
+
+        const animateBtn = document.getElementById('animate');
+        const animateVideo = document.getElementById('animateVideo');
+        const animateStatus = document.getElementById('animateStatus');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        const setStatus = (msg, isError = false) => {
+            animateStatus.textContent = msg;
+            animateStatus.style.color = isError ? '#b91c1c' : '#475569';
+        };
+
+        animateBtn.addEventListener('click', async () => {
+            const { rows, cols } = getDims();
+            if (rows !== 2 || cols !== 2) {
+                setStatus('Animation requires a 2×2 matrix.', true);
+                return;
+            }
+
+            const values = Array.isArray(calculatedMatrix) ? calculatedMatrix : (() => {
+                const fallback = [];
+                for (let r = 1; r <= 2; r++) {
+                    const row = [];
+                    for (let c = 1; c <= 2; c++) {
+                        const input = document.querySelector(`input[name="a${r}${c}"]`);
+                        const val = parseFloat(input.value || '0');
+                        row.push(Number.isFinite(val) ? val : 0);
+                    }
+                    fallback.push(row);
+                }
+                return fallback;
+            })();
+
+            animateBtn.disabled = true;
+            setStatus('');
+            loadingOverlay.classList.add('active');
+
+            try {
+                const response = await fetch('/animate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rows, cols, values })
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    const detail = payload.details ? ` ${payload.details}` : '';
+                    throw new Error((payload.error || 'Animation failed.') + detail);
+                }
+
+                animateVideo.src = payload.video_url;
+                animateVideo.style.display = 'block';
+                setStatus('Animation ready.');
+                animateVideo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (err) {
+                setStatus(err.message || 'Animation failed.', true);
+            } finally {
+                animateBtn.disabled = false;
+                loadingOverlay.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
